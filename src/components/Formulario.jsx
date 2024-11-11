@@ -1,21 +1,11 @@
-import React, { useState } from 'react';
 import Swal from "sweetalert2";
 
-const Formulario = ({ addTodo }) => {
-
-  const initialValue = {
-    title: "Tarea 1",
-    description: "Descripcion 1",
-    state: "completada",  // Es mejor mantenerlo como string para el select
-    priority: false
-  };
-
-  const [todo, setTodo] = useState(initialValue);
+const Formulario = ({ addTodo, todo , edit, editTodo, setTodo, initalValue, setEdit}) => {
 
   const handleSubmit = e => {
     e.preventDefault();
 
-    const {id, title, description, state, priority } = todo;
+    const {title, description, state, priority } = todo
 
     if (!title.trim() || !description.trim()) {
       return Swal.fire({
@@ -25,27 +15,33 @@ const Formulario = ({ addTodo }) => {
       });
     }
 
-    addTodo({
-      id: Date.now(),
-      title,
-      description,
-      state: state === "completada",  // Convertimos el estado a booleano
-      priority
-    });
+    edit ? //Si edita ejecuta edición si no lo agrega
+        editTodo(todo):
+        addTodo({
+          id: Date.now(),
+          title,
+          description,
+          state,  // Convertimos el estado a booleano
+          priority
+        })
 
     Swal.fire({
       icon: "success",
       title: "Tarea completada con éxito"
     });
 
-    setTodo(initialValue);  // Limpiar el formulario
+    setTodo(initalValue);// Limpiar el formulario
+    setEdit(false)
   };
 
   const handleChange = e => {
     const { name, value, checked, type } = e.target;
     setTodo({
       ...todo,
-      [name]: type === "checkbox" ? checked : value
+      [name]:
+          name === "state" ? //Si estamos en el input del select entonces acciona el check
+              value === "completada": //Si no es completada se queda como pendiente
+              type === "checkbox" ? checked : value
     });
   };
 
@@ -70,7 +66,7 @@ const Formulario = ({ addTodo }) => {
           <select
               name="state"
               className="form-control mb-2"
-              value={todo.state}
+              value={todo.state ? "completada":"pendiente"}
               onChange={handleChange}
           >
             <option value="pendiente">Pendiente</option>
@@ -92,12 +88,9 @@ const Formulario = ({ addTodo }) => {
               Prioridad
             </label>
           </div>
-          <button
-              type="submit"
-              className="btn btn-primary"
-          >
-            Añadir
-          </button>
+          {edit ?
+              <button type="submit" className="btn btn-primary">Editar Tarea</button> :
+              <button type="submit" className="btn btn-primary">Añadir Tarea</button>}
         </form>
       </div>
   );
